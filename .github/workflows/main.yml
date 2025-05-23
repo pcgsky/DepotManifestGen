@@ -1,0 +1,34 @@
+name: Build Windows Executable
+
+on:
+  # 触发条件：代码推送到 main 分支或手动运行工作流
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Compile Go to EXE
+    runs-on: windows-latest  # 使用 Windows 运行环境
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # 拉取代码到 Actions 运行器
+
+      - name: Set up Go
+        uses: actions/setup-go@v5  # 配置 Go 环境
+        with:
+          go-version: 1.21  # 指定 Go 版本（根据代码兼容性选择）
+
+      - name: Build executable
+        run: |
+          go mod init github.com/your-username/your-repo-name  # 初始化模块（若代码无 go.mod）
+          go build -o DepotManifestGen.exe ./  # 编译为 Windows 可执行文件
+        env:
+          # 可添加环境变量（如 API 密钥，需通过 Secrets 管理，此处仅示例）
+          # STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4  # 上传编译产物
+        with:
+          name: executable
+          path: DepotManifestGen.exe  # 目标文件路径
