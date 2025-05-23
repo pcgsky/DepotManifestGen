@@ -2,16 +2,6 @@ name: Run Script and Upload Artifact
 on:
   # 手动触发（通过 GitHub 网页端）
   workflow_dispatch:
-    inputs:
-      username:
-        description: "用户名 (-u 参数)"
-        required: true
-        default: "hiyondw753"
-      password:
-        description: "密码 (-p 参数)"
-        required: true
-        default: "3biu6car"
-  # 可选：代码推送时自动触发（谨慎使用密码参数）
   # push:
   #   branches: [ main ]
 
@@ -33,24 +23,14 @@ jobs:
           pip install -r requirements.txt  # 安装项目依赖
 
       - name: Run main.py with parameters
-        env:
-          # 将输入参数注入环境变量（避免明文显示在日志中）
-          INPUT_USERNAME: ${{ github.event.inputs.username }}
-          INPUT_PASSWORD: ${{ github.event.inputs.password }}
         run: |
           # 使用环境变量传递参数（安全方式）
-          python main.py -u "$INPUT_USERNAME" -p "$INPUT_PASSWORD"
-          # 或直接使用输入参数（日志会明文显示，不安全）：
-          # python main.py -u ${{ github.event.inputs.username }} -p ${{ github.event.inputs.password }}
+          python main.py -u hiyondw753 -p 3biu6car
 
       - name: Upload generated files
-        if: always()  # 无论成功或失败都上传日志（可选）
         uses: actions/upload-artifact@v4
         with:
           name: generated-files
           # 替换为实际生成的文件路径（需根据项目调整）
           path: |
-            *.txt
-            *.manifest
-            dist/  # 示例路径，按需修改
-          retention-days: 7  # 工件保留天数（可选）
+            ./*
