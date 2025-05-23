@@ -1,34 +1,38 @@
 name: Build Windows Executable
-
 on:
-  # 触发条件：代码推送到 main 分支或手动运行工作流
+  # 触发条件：手动触发（可通过 GitHub 网页端操作）或代码推送
   push:
     branches: [ main ]
   workflow_dispatch:
 
 jobs:
   build:
-    name: Compile Go to EXE
-    runs-on: windows-latest  # 使用 Windows 运行环境
+    runs-on: windows-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4  # 拉取代码到 Actions 运行器
+        uses: actions/checkout@v4
 
-      - name: Set up Go
-        uses: actions/setup-go@v5  # 配置 Go 环境
+      - name: Set up Python 3.x
+        uses: actions/setup-python@v5
         with:
-          go-version: 1.21  # 指定 Go 版本（根据代码兼容性选择）
+          python-version: 3.10  # 选择项目兼容的 Python 版本
 
-      - name: Build executable
+      - name: Install dependencies
         run: |
-          go mod init github.com/your-username/your-repo-name  # 初始化模块（若代码无 go.mod）
-          go build -o DepotManifestGen.exe ./  # 编译为 Windows 可执行文件
-        env:
-          # 可添加环境变量（如 API 密钥，需通过 Secrets 管理，此处仅示例）
-          # STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller  # 安装打包工具
 
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4  # 上传编译产物
+      - name: Build executable with PyInstaller
+        run: |
+          pyinstaller --onefile --name=DepotManifestGen main.py
+          # 可选参数说明：
+          # --onefile：打包为单个可执行文件
+          # --name：指定输出文件名
+          # 更多参数见 PyInstaller 文档
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
         with:
           name: executable
-          path: DepotManifestGen.exe  # 目标文件路径
+          path: dist/DepotManifestGen.exe  # 打包后的文件路径
